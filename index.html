@@ -140,11 +140,11 @@
             renderBoard();
 
             if(checkWin(player)) {
-                message.textContent = "You win! 🎉";
+                message.textContent = "You win!";
                 return;
             }
             if(checkDraw()) {
-                message.textContent = "It's a draw! 🤝";
+                message.textContent = "It's a draw!";
                 return;
             }
 
@@ -154,11 +154,11 @@
             currentTurn = 'player';
 
             if(checkWin(ai)) {
-                message.textContent = "AI wins! 💻";
+                message.textContent = "AI wins!";
                 return;
             }
             if(checkDraw()) {
-                message.textContent = "It's a draw! 🤝";
+                message.textContent = "It's a draw!";
             }
         }
 
