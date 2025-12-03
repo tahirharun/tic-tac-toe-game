@@ -54,12 +54,19 @@
     </style>
 </head>
 <body>
-    <h1>Tic-Tac-Toe vs AI</h1>
-    <div id="choose">
+    <h1>Tic-Tac-Toe 🎮</h1>
+    <div id="mode">
+        <h2 style="color:#fff;">Choose Mode:</h2>
+        <button onclick="chooseMode('pvp')">Player vs Player</button>
+        <button onclick="chooseMode('pvc')">Player vs AI</button>
+    </div>
+    
+    <div id="choose" style="display:none;">
         <h2 style="color:#fff;">Choose your side:</h2>
         <button onclick="startGame('X')">X</button>
         <button onclick="startGame('O')">O</button>
     </div>
+    
     <div class="board" id="board" style="display:none;"></div>
     <h2 id="message"></h2>
     <button onclick="resetGame()" style="display:none;" id="resetBtn">Reset Game</button>
@@ -70,11 +77,23 @@
         const message = document.getElementById('message');
         const chooseDiv = document.getElementById('choose');
         const resetBtn = document.getElementById('resetBtn');
+        const modeDiv = document.getElementById('mode');
 
-        let player, ai, currentTurn;
+        let player, ai, currentTurn, mode;
 
-        function startGame(choice) {
-            player = choice;
+        function chooseMode(selectedMode) {
+            mode = selectedMode;
+            modeDiv.style.display = 'none';
+            if(mode === 'pvc') {
+                chooseDiv.style.display = 'block';
+            } else {
+                // Player vs Player: set initial turn to X
+                startGamePvP();
+            }
+        }
+
+        function startGame(side) {
+            player = side;
             ai = player === 'X' ? 'O' : 'X';
             chooseDiv.style.display = 'none';
             boardDiv.style.display = 'grid';
@@ -91,6 +110,16 @@
             }
         }
 
+        function startGamePvP() {
+            player = 'X';
+            currentTurn = 'player'; // 'player' is X's turn
+            boardDiv.style.display = 'grid';
+            resetBtn.style.display = 'inline-block';
+            message.textContent = '';
+            for(let i=0;i<board.length;i++) board[i] = null;
+            renderBoard();
+        }
+
         function checkWin(char) {
             const winCombos = [
                 [0,1,2],[3,4,5],[6,7,8],
@@ -105,14 +134,14 @@
         }
 
         function aiMove() {
-            let move = findBestMove(ai); // 1. Win
-            if(move === null) move = findBestMove(player); // 2. Block
-            if(move === null && board[4] === null) move = 4; // 3. Center
-            if(move === null) { // 4. Corners
+            let move = findBestMove(ai);
+            if(move === null) move = findBestMove(player);
+            if(move === null && board[4] === null) move = 4; 
+            if(move === null) { 
                 const corners = [0,2,6,8].filter(i => board[i] === null);
                 if(corners.length > 0) move = corners[Math.floor(Math.random()*corners.length)];
             }
-            if(move === null) { // 5. Sides
+            if(move === null) { 
                 const sides = [1,3,5,7].filter(i => board[i] === null);
                 if(sides.length > 0) move = sides[Math.floor(Math.random()*sides.length)];
             }
@@ -134,31 +163,45 @@
         }
 
         function handleClick(index) {
-            if(board[index] || message.textContent || currentTurn !== 'player') return;
+            if(board[index] || message.textContent) return;
 
-            board[index] = player;
-            renderBoard();
+            if(mode === 'pvp') {
+                const char = currentTurn === 'player' ? 'X' : 'O';
+                board[index] = char;
+                renderBoard();
+                if(checkWin(char)) {
+                    message.textContent = `${char} wins!`;
+                    return;
+                }
+                if(checkDraw()) {
+                    message.textContent = "It's a draw!";
+                    return;
+                }
+                currentTurn = currentTurn === 'player' ? 'ai' : 'player'; 
+            } else if(mode === 'pvc') {
+                if(currentTurn !== 'player') return;
+                board[index] = player;
+                renderBoard();
+                if(checkWin(player)) {
+                    message.textContent = "You win! ";
+                    return;
+                }
+                if(checkDraw()) {
+                    message.textContent = "It's a draw!";
+                    return;
+                }
 
-            if(checkWin(player)) {
-                message.textContent = "You win!";
-                return;
-            }
-            if(checkDraw()) {
-                message.textContent = "It's a draw!";
-                return;
-            }
-
-            currentTurn = 'ai';
-            aiMove();
-            renderBoard();
-            currentTurn = 'player';
-
-            if(checkWin(ai)) {
-                message.textContent = "AI wins!";
-                return;
-            }
-            if(checkDraw()) {
-                message.textContent = "It's a draw!";
+                currentTurn = 'ai';
+                aiMove();
+                renderBoard();
+                currentTurn = 'player';
+                if(checkWin(ai)) {
+                    message.textContent = "AI wins!";
+                    return;
+                }
+                if(checkDraw()) {
+                    message.textContent = "It's a draw!";
+                }
             }
         }
 
@@ -177,7 +220,8 @@
         function resetGame() {
             for(let i=0;i<board.length;i++) board[i] = null;
             message.textContent = '';
-            chooseDiv.style.display = 'block';
+            modeDiv.style.display = 'block';
+            chooseDiv.style.display = 'none';
             boardDiv.style.display = 'none';
             resetBtn.style.display = 'none';
         }
